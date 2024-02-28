@@ -1,6 +1,8 @@
 import cv2
 import numpy as np
 from PIL import Image
+import random
+import time
 
 import streamlit as st
 from streamlit_drawable_canvas import st_canvas
@@ -38,6 +40,20 @@ def dlow_circles(background_image, _xs, _ys):
     return background_image
 
 
+def dlow_xs(background_image, _xs, _ys):
+    for _x, _y in zip(list(_xs), list(_ys)):
+        print(_x, _y)
+        background_image = cv2.line(
+            np.array(background_image),
+            (200 * _x + 50, 200 * _y + 50), (200 * _x + 150, 200 * _y + 150),
+            (0, 0, 255), thickness=8)
+        background_image = cv2.line(
+            np.array(background_image),
+            (200 * _x + 50, 200 * _y + 150), (200 * _x + 150, 200 * _y + 50),
+            (0, 0, 255), thickness=8)
+    return background_image
+
+
 def get_canvas_start_end(canvas_result):
     start_point = None
     end_point = None
@@ -48,18 +64,28 @@ def get_canvas_start_end(canvas_result):
     return start_point, end_point
 
 
-def update_board(board, start_point, end_point, value=1):
+def canvas2ids(start_point, end_point):
     _s_x, _s_y = start_point
     _e_x, _e_y = end_point
+    for id_x in range(3):
+        for jd_y in range(3):
+            if ((200 * id_x) < _s_x < (200 * (id_x + 1))) \
+                    and ((200 * id_x) < _e_x < (200 * (id_x + 1))) \
+                    and ((200 * jd_y) < _s_y < (200 * (jd_y + 1))) \
+                    and ((200 * jd_y) < _e_y < (200 * (jd_y + 1))):
+                return id_x, jd_y
+    return None, None
 
-    for _id_x in range(3):
-        for _jd_y in range(3):
-            if ((200 * _id_x) < _s_x < (200 * (_id_x + 1))) \
-                    and ((200 * _id_x) < _e_x < (200 * (_id_x + 1))) \
-                    and ((200 * _jd_y) < _s_y < (200 * (_jd_y + 1))) \
-                    and ((200 * _jd_y) < _e_y < (200 * (_jd_y + 1))):
-                board[_id_x, _jd_y] = value
-    return board
+
+def random_ai(board):
+    time.sleep(0.5)  # 考えているフリ
+    _xs, _ys = np.where(board == 0)
+    empty_points = [(_x, _y) for _x, _y in zip(_xs, _ys)]
+    if empty_points:
+        selected_point = random.choice(empty_points)
+        return selected_point
+    else:
+        return None, None
 
 
 def main():
@@ -82,25 +108,38 @@ def main():
     start_point, end_point = get_canvas_start_end(canvas_result)
     print(start_point, end_point)
 
-    if st.button("Submit") and start_point is not None and end_point is not None:
-        st.write("あなたは、次をサブミットしました。", start_point, end_point)
+    if st.button("Submit"):
 
-        board = st.session_state.board
-        st.session_state.board = update_board(board, start_point, end_point)
-        print(st.session_state.board)
+        if start_point is not None and end_point is not None:
+            st.write("あなたは、次をサブミットしました。", start_point, end_point)
 
-        print(np.where(st.session_state.board == 1))
+            id_x, id_y = canvas2ids(start_point, end_point)
+            if id_x is not None and id_y is not None and st.session_state.board[id_x, id_y] == 0:
+                st.session_state.board[id_x, id_y] = 1
+                print(st.session_state.board)
 
-        _xs, _ys = np.where(st.session_state.board == 1)
+                id_xs, id_ys = np.where(st.session_state.board == 1)
+
+                background_image = get_default_background()
+                background_image = dlow_circles(background_image, id_xs, id_ys)
+                st.session_state.background_image = Image.fromarray(background_image)
+
+                id_x, id_y = random_ai(st.session_state.board)
+                if id_x is not None and id_y is not None:
+                    st.session_state.board[id_x, id_y] = -1
+                    print('random_ai :', id_x, id_y)
+                    print(st.session_state.board)
+            else:
+                st.write("その場所は無効です")
 
         background_image = get_default_background()
-        background_image = dlow_circles(background_image, _xs, _ys)
+        id_xs, id_ys = np.where(st.session_state.board == 1)
+        background_image = dlow_circles(background_image, id_xs, id_ys)
+        id_xs, id_ys = np.where(st.session_state.board == -1)
+        background_image = dlow_xs(background_image, id_xs, id_ys)
         st.session_state.background_image = Image.fromarray(background_image)
 
-        st_canvas(
-            background_image=st.session_state.background_image,
-            height=600, width=600,
-        )
+        st.rerun()
 
     result = result_check(st.session_state.board)
 
