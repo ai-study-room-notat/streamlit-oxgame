@@ -99,19 +99,26 @@ def main():
     if 'background_image' not in st.session_state:
         st.session_state.background_image = get_default_background()
 
+    if 'info_message' not in st.session_state:
+        st.session_state.info_message = ""
+
     canvas_result = st_canvas(
         background_image=st.session_state.background_image,
         height=600,
         width=600,
     )
 
+    enable_submit = st.button("Submit")
+    st.write(st.session_state.info_message)
+
     start_point, end_point = get_canvas_start_end(canvas_result)
     print(start_point, end_point)
 
-    if st.button("Submit"):
+    if enable_submit:
 
         if start_point is not None and end_point is not None:
-            st.write("あなたは、次をサブミットしました。", start_point, end_point)
+            print(start_point, end_point)
+            st.session_state.info_message = "あなたは、次をサブミットしました。{}, {}".format(start_point, end_point)
 
             id_x, id_y = canvas2ids(start_point, end_point)
             if id_x is not None and id_y is not None and st.session_state.board[id_x, id_y] == 0:
@@ -130,7 +137,7 @@ def main():
                     print('random_ai :', id_x, id_y)
                     print(st.session_state.board)
             else:
-                st.write("その場所は無効です")
+                st.session_state.info_message = "その場所は無効です"
 
         background_image = get_default_background()
         id_xs, id_ys = np.where(st.session_state.board == 1)
@@ -147,6 +154,7 @@ def main():
         state_holder.write("あなたは○です。○を書いて「Submit」ボタンを押してください")
     elif result == 1:
         state_holder.write("あなたの勝ちです")
+        st.balloons()
     elif result == -1:
         state_holder.write("あなたの負けです")
 
