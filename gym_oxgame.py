@@ -119,16 +119,16 @@ def vs_random_agent(env):
         print("It is the turn of {}.".format('X' if env.current_player == 1 else 'O'))
         if env.current_player == 1 :
             action = int(input("Enter your move (0-8): "))
+            print(f"Player's action: {action}")
         else:
             action = agent.choose_action()
+            print(f"Agent's action: {action}")
         obs, reward, done, info = env.step(action)
-        print(f"Agent's action: {action}")
         if done:
             if reward == 10:
                 print("You win!")
             elif reward == 0:
                 print("It's a draw!")
-        env.render()
 
 
 def main():
