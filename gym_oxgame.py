@@ -16,7 +16,7 @@ class OXGameEnv(gym.Env):
         self.np_random, seed = seeding.np_random(seed)
         return [seed]
 
-    def reset(self):
+    def reset(self, **kwargs):
         self.board = np.zeros((3, 3))
         self.current_player = 1
         return self.board
