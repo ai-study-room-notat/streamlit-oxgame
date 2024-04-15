@@ -12,7 +12,7 @@ def result_check(board):
     row_sum = np.sum(board, axis=0).astype(int)
     col_sum = np.sum(board, axis=1).astype(int)
     diagonal_sum = np.diag(board).sum().astype(int)
-    transpose_diagonal_sum = np.diag(board.T).sum().astype(int)
+    transpose_diagonal_sum = np.diag(np.flipud(board)).sum().astype(int)
 
     if (3 in row_sum) or (3 in col_sum) or (3 == diagonal_sum) or (3 == transpose_diagonal_sum):
         return 1
@@ -102,14 +102,19 @@ def main():
     if 'info_message' not in st.session_state:
         st.session_state.info_message = ""
 
+    if 'key_num' not in st.session_state:
+        st.session_state.key_num = 0
+
     canvas_result = st_canvas(
         background_image=st.session_state.background_image,
         height=600,
         width=600,
         display_toolbar=False,
-        key="canvas"
+        initial_drawing={'background': ''},
+        key="canvas-{}".format(st.session_state.key_num)
     )
-    # print('canvas_result :', canvas_result)
+
+    st.write('画像が表示されない時は、何も入力せずに「Submit」してください')
 
     enable_submit = st.button("Submit")
     print('enable_submit :', enable_submit)
@@ -143,6 +148,8 @@ def main():
         id_xs, id_ys = np.where(st.session_state.board == -1)
         background_image = dlow_xs(background_image, id_xs, id_ys)
         st.session_state.background_image = Image.fromarray(background_image)
+
+        st.session_state.key_num += 1
 
         st.rerun()
 
