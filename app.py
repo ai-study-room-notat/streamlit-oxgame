@@ -107,8 +107,9 @@ def main():
         height=600,
         width=600,
         display_toolbar=False,
+        key="canvas"
     )
-    print('canvas_result :', canvas_result)
+    # print('canvas_result :', canvas_result)
 
     enable_submit = st.button("Submit")
     print('enable_submit :', enable_submit)
