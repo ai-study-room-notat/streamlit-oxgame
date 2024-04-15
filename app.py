@@ -106,9 +106,12 @@ def main():
         background_image=st.session_state.background_image,
         height=600,
         width=600,
+        display_toolbar=False,
     )
+    print('canvas_result :', canvas_result)
 
     enable_submit = st.button("Submit")
+    print('enable_submit :', enable_submit)
     st.write(st.session_state.info_message)
 
     start_point, end_point = get_canvas_start_end(canvas_result)
@@ -124,12 +127,6 @@ def main():
             if id_x is not None and id_y is not None and st.session_state.board[id_x, id_y] == 0:
                 st.session_state.board[id_x, id_y] = 1
                 print(st.session_state.board)
-
-                id_xs, id_ys = np.where(st.session_state.board == 1)
-
-                background_image = get_default_background()
-                background_image = dlow_circles(background_image, id_xs, id_ys)
-                st.session_state.background_image = Image.fromarray(background_image)
 
                 id_x, id_y = random_ai(st.session_state.board)
                 if id_x is not None and id_y is not None:
